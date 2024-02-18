@@ -5,16 +5,19 @@
   export let data = [];
   let selectedDepartment = 'all';
   let departments = [];
+  let filteredData = []; // Declare filteredData here
 
   onMount(async () => {
-    // const response = await d3.csv('/static/capes_clean.csv');
-    // data = response;
     departments = Array.from(new Set(data.map(d => d['Department'])));
     createVisualization();
   });
 
   $: {
     if (selectedDepartment && data) {
+      // Filter the data based on the selected department
+      filteredData = selectedDepartment !== 'all' 
+        ? data.filter(d => d['Department'] === selectedDepartment)
+        : data;
       createVisualization();
     }
   }
@@ -22,20 +25,13 @@
   function createVisualization() {
     d3.select('#my_dataviz').select('svg').remove(); // Clear the previous visualization
 
-    let filteredData = data;
-    if (selectedDepartment !== 'all') {
-      filteredData = filteredData.filter(d => d['Department'] === selectedDepartment);
-    }
-
     const width = window.innerWidth - 100;
     const height = window.innerHeight - 100;
     const color = d3.scaleOrdinal(d3.schemeCategory10);
     const x = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d['Average Study Hours per Week'])])
+                .domain([0, d3.max(filteredData, d => d['Average Study Hours per Week'])])
                 .range([-width / 2 + 20, width / 2 - 20]);
     const xAxis = d3.axisBottom(x);
-    departments = Array.from(new Set(data.map(d => d['Department'])));
-    console.log(departments)
 
     filteredData.forEach(d => {
         d.x = x(d['Average Study Hours per Week']);
@@ -43,7 +39,7 @@
         d.radius = 5;
     });
 
-    const simulation = d3.forceSimulation(data)
+    const simulation = d3.forceSimulation(filteredData) // Use filteredData here
         .force('x', d3.forceX(d => d.x).strength(0.99))
         .force('y', d3.forceY().strength(0.05))
         .force('collide', d3.forceCollide(d => d.radius + 1))
@@ -58,7 +54,7 @@
                 .attr('transform', `translate(${width / 2},${height / 2})`);
 
     svg.selectAll('circle')
-        .data(data)
+        .data(filteredData) // Use filteredData here
         .enter()
         .append('circle')
         .attr('cx', d => d.x)
@@ -67,7 +63,7 @@
         .style('fill', d => color(d['Department']));
 
     svg.selectAll('text')
-        .data(data)
+        .data(filteredData) // Use filteredData here
         .enter()
         .append('text')
         .attr('x', d => d.x)
@@ -80,8 +76,7 @@
     svg.append('g')
         .attr('class', 'x-axis')
         .call(xAxis);
-    }
-
+  }
 </script>
 
 <style>
