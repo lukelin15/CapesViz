@@ -26,22 +26,28 @@
     d3.select('#my_dataviz').select('svg').remove(); // Clear the previous visualization
 
     const width = window.innerWidth - 100;
-    const height = window.innerHeight - 100;
+    const height = window.innerHeight - 90;
     const color = d3.scaleOrdinal(d3.schemeCategory10);
     const x = d3.scaleLinear()
-                .domain([0, d3.max(filteredData, d => d['Average Study Hours per Week'])])
+                .domain([0, d3.max(data, d => d['Study Hours per Week'])])
                 .range([-width / 2 + 20, width / 2 - 20]);
+    const y = d3.scaleLinear()
+                .domain([d3.max(data, d => d['Average GPA Received']), 0])
+                .range([-height / 2 + 40, height / 2 - 40]);
     const xAxis = d3.axisBottom(x);
+    const yAxis = d3.axisLeft(y);
 
     filteredData.forEach(d => {
-        d.x = x(d['Average Study Hours per Week']);
-        d.y = 0; // Initial Y, adjusted by simulation
+        d.x = x(d['Study Hours per Week']);
+        d.y = y(d['Average GPA Received']);
         d.radius = 5;
     });
 
+    console.log
+
     const simulation = d3.forceSimulation(filteredData) // Use filteredData here
         .force('x', d3.forceX(d => d.x).strength(0.99))
-        .force('y', d3.forceY().strength(0.05))
+        .force('y', d3.forceY(d => d.y).strength(0.99))
         .force('collide', d3.forceCollide(d => d.radius + 1))
         .stop();
 
@@ -51,7 +57,7 @@
                 .attr('width', width)
                 .attr('height', height)
                 .append('g')
-                .attr('transform', `translate(${width / 2},${height / 2})`);
+                .attr('transform', `translate(${width / 2},${(height / 1.9)})`);
 
     svg.selectAll('circle')
         .data(filteredData) // Use filteredData here
@@ -61,11 +67,11 @@
         .attr('cy', d => d.y)
         .attr('r', d => d.radius)
         .style('fill', d => color(d['Department']))
-        .append('title') // Append a title element to each circle
-        .text(d => `Course Code: ${d['Course Code']}\nDepartment: ${d['Department']}\nAverage Study Hours per Week: ${d['Average Study Hours per Week']}`); 
+        .append('title')
+        .text(d => `Course Code: ${d['Course Code']}\nDepartment: ${d['Department']}\nAverage Study Hours per Week: ${d['Study Hours per Week']}`);
 
     svg.selectAll('text')
-        .data(filteredData) // Use filteredData here
+        .data(filteredData) // filteredData
         .enter()
         .append('text')
         .attr('x', d => d.x)
@@ -73,11 +79,29 @@
         .text(d => d['Course Code'])
         .attr('text-anchor', 'middle')
         .style('fill', '#fff')
-        .style('font-size', '1.9px'); // Adjust the font size as needed
+        .style('font-size', '1.9px');
 
     svg.append('g')
-        .attr('class', 'x-axis')
-        .call(xAxis);
+        .attr('transform', `translate(0, ${300})`)
+        .call(xAxis.ticks(16))
+        .append('text')
+        .attr('x', 30) 
+        .attr('y', 40) 
+        .attr('fill', 'black')
+        .style('text-anchor', 'middle')
+        .text('Average Study Hours Per Week');
+    
+    svg.append('g')
+        .call(yAxis.ticks(8)) 
+        .attr('transform', `translate(-615,0)`)
+        .append('text')
+        .attr('transform', 'rotate(-90)')
+        .attr('x', -10)
+        .attr('y', -40)
+        .attr('fill', 'black')
+        .style('text-anchor', 'middle')
+        .text('Average GPA Received');
+    
   }
 </script>
 
@@ -145,14 +169,12 @@
   <h1>UCSD Capes Trends</h1>
   <h2>Average Study Hours per Week by Course</h2>
   <p>
-    We decided to plot the Average Study Hours per Week of UCSD courses using CAPES data. In our plot, 
-    each course is color-coded by department and labeled by the course code. For interactivity, we 
+    We decided to plot the Average Study Hours per Week vs The Avergae GPA/Grade Received of 
+    UCSD courses using CAPES data. In our plot, each course is color-coded by department and labeled by the course code. For interactivity, we 
     included a dropdown with all the departments for users to select a department and all courses 
-    associated with that department will be highlighted for easy viewing. We chose to make each course 
-    a circle for aesthetic purposes and chose saturated and distinct colors for easy differentiation 
-    between departments. Since there is only one axis on this plot, as we decided to focus solely on 
-    the amount of hours studied, we tried to stratify the points across the height of the svg so as to 
-    not clump them together as much as possible. As for our interaction, we initially toyed with the 
+    associated with that department will be highlighted for easy viewing and all other courses will
+    disapear. We chose to make each course a circle for aesthetic purposes and chose saturated and distinct colors for easy differentiation 
+    between departments in the 'all' selection. As for our interaction, we initially toyed with the 
     idea of a tooltip displaying the exact average number of study hours when hovered over the course, 
     but with so many courses on the plot, we felt that this would not be as valuable as a dropdown menu 
     that would highlight courses of the selected department. We decided on highlighting courses of the 
@@ -160,11 +182,13 @@
     many courses, it is hard to make sense of any trends; this since courses share a common element 
     — department — we decided to add this element of highlighting courses of the same department in 
     order to explore trends between the labor demands across courses under the same department and 
-    between departments. 
+    between departments. For comparison, we fixed the axis across selections.
   </p>
   <p>
     In regards to the development process, we started with cleaning the data in Pandas and getting only the 
-    columns needed for our visual… insert with division of labor and time spent.
+    columns needed for our visualization ... insert with division of labor and time spent... We spent 
+    roughly ____ amount of hours creating this application. The ____ took the most amount of time since it 
+    ______
   </p>
 </body>
 

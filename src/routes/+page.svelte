@@ -9,7 +9,7 @@
 
     onMount(async () => {
 
-        const res = await fetch('capes_courses.csv'); 
+        const res = await fetch('capes_clean2.csv'); 
 
         const csv = await res.text();
 
