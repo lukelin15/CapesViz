@@ -68,7 +68,7 @@
         .attr('r', d => d.radius)
         .style('fill', d => color(d['Department']))
         .append('title')
-        .text(d => `Course Code: ${d['Course Code']}\nDepartment: ${d['Department']}\nAverage Study Hours per Week: ${d['Study Hours per Week']}`);
+        .text(d => `Course Code: ${d['Course Code']}\nDepartment: ${d['Department']}\nAverage Study Hours per Week: ${d['Study Hours per Week']}\nAverage GPA Received: ${d['Average GPA Received']}`);
 
     svg.selectAll('text')
         .data(filteredData) // filteredData
