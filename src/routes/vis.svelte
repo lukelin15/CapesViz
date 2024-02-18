@@ -14,7 +14,7 @@
   });
 
   $: {
-    if (selectedDepartment) {
+    if (selectedDepartment && data) {
       createVisualization();
     }
   }
@@ -22,88 +22,66 @@
   function createVisualization() {
     d3.select('#my_dataviz').select('svg').remove(); // Clear the previous visualization
 
-let filteredData = data;
-if (selectedDepartment !== 'all') {
-  filteredData = filteredData.filter(d => d['Department'] === selectedDepartment);
-}
+    let filteredData = data;
+    if (selectedDepartment !== 'all') {
+      filteredData = filteredData.filter(d => d['Department'] === selectedDepartment);
+    }
 
-// Create histogram
-const margin = {top: 10, right: 30, bottom: 30, left: 40};
-const width = window.innerWidth - margin.left - margin.right;
-const height = window.innerHeight - margin.top - margin.bottom;
-
-const svg = d3.select("#my_dataviz")
-  .append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", `translate(${margin.left},${margin.top})`);
-
+    const width = window.innerWidth - 100;
+    const height = window.innerHeight - 100;
+    const color = d3.scaleOrdinal(d3.schemeCategory10);
     const x = d3.scaleLinear()
-      .domain([0, d3.max(filteredData, d => d['Average Study Hours per Week'])])
-      .range([0, width]);
+                .domain([0, d3.max(data, d => d['Average Study Hours per Week'])])
+                .range([-width / 2 + 20, width / 2 - 20]);
+    const xAxis = d3.axisBottom(x);
+    departments = Array.from(new Set(data.map(d => d['Department'])));
+    console.log(departments)
 
-    svg.append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(x));
+    filteredData.forEach(d => {
+        d.x = x(d['Average Study Hours per Week']);
+        d.y = 0; // Initial Y, adjusted by simulation
+        d.radius = 5;
+    });
 
-    const histogram = d3.histogram()
-      .value(d => d['Average Study Hours per Week'])
-      .domain(x.domain())
-      .thresholds(x.ticks(70));
+    const simulation = d3.forceSimulation(data)
+        .force('x', d3.forceX(d => d.x).strength(0.99))
+        .force('y', d3.forceY().strength(0.05))
+        .force('collide', d3.forceCollide(d => d.radius + 1))
+        .stop();
 
-    const bins = histogram(filteredData);
+    for (let i = 0; i < 120; ++i) simulation.tick();
 
-    const y = d3.scaleLinear()
-      .range([height, 0]);
-    y.domain([0, d3.max(bins, d => d.length)]);
+    const svg = d3.select('#my_dataviz').append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .append('g')
+                .attr('transform', `translate(${width / 2},${height / 2})`);
 
-    svg.append("g")
-      .call(d3.axisLeft(y));
+    svg.selectAll('circle')
+        .data(data)
+        .enter()
+        .append('circle')
+        .attr('cx', d => d.x)
+        .attr('cy', d => d.y)
+        .attr('r', d => d.radius)
+        .style('fill', d => color(d['Department']));
 
-    // Create tooltip
-    const tooltip = d3.select("#my_dataviz")
-      .append("div")
-      .style("opacity", 0)
-      .attr("class", "tooltip")
-      .style("background-color", "white")
-      .style("border", "solid")
-      .style("border-width", "2px")
-      .style("border-radius", "5px")
-      .style("padding", "5px");
+    svg.selectAll('text')
+        .data(data)
+        .enter()
+        .append('text')
+        .attr('x', d => d.x)
+        .attr('y', d => d.y)
+        .text(d => d['Course Code'])
+        .attr('text-anchor', 'middle')
+        .style('fill', '#fff')
+        .style('font-size', '1.9px'); // Adjust the font size as needed
 
-    const mouseover = function(event, d) {
-      tooltip
-        .style("opacity", 1)
+    svg.append('g')
+        .attr('class', 'x-axis')
+        .call(xAxis);
     }
 
-    const mousemove = function(event, d) {
-      const courseNames = d.map(course => course['Course']).join(', ');
-      tooltip
-        .html(`Average Study Hours per Week: ${d.x0} - ${d.x1}<br>Number of Students: ${d.length}<br>Courses: ${courseNames}`)
-        .style("left", (d3.pointer(event)[0]+70) + "px")
-        .style("top", (d3.pointer(event)[1]) + "px")
-    }
-
-    const mouseleave = function(event, d) {
-      tooltip
-        .style("opacity", 0)
-    }
-
-    // Add bars
-    svg.selectAll("rect")
-      .data(bins)
-      .enter()
-      .append("rect")
-      .attr("x", 1)
-      .attr("transform", d => `translate(${x(d.x0)},${y(d.length)})`)
-      .attr("width", d => x(d.x1) - x(d.x0) -1 )
-      .attr("height", d => height - y(d.length) )
-      .style("fill", "#69b3a2")
-      .on("mouseover", mouseover)
-      .on("mousemove", mousemove)
-      .on("mouseleave", mouseleave);
-  }
 </script>
 
 <style>
