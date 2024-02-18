@@ -60,7 +60,9 @@
         .attr('cx', d => d.x)
         .attr('cy', d => d.y)
         .attr('r', d => d.radius)
-        .style('fill', d => color(d['Department']));
+        .style('fill', d => color(d['Department']))
+        .append('title') // Append a title element to each circle
+        .text(d => `Course Code: ${d['Course Code']}\nDepartment: ${d['Department']}\nAverage Study Hours per Week: ${d['Average Study Hours per Week']}`); 
 
     svg.selectAll('text')
         .data(filteredData) // Use filteredData here
