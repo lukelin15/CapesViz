@@ -29,13 +29,15 @@
     const height = window.innerHeight - 90;
     const color = d3.scaleOrdinal(d3.schemeCategory10);
     const x = d3.scaleLinear()
-                .domain([0, d3.max(data, d => d['Study Hours per Week'])])
-                .range([-width / 2 + 20, width / 2 - 20]);
+              .domain([0, d3.max(filteredData, d => d['Study Hours per Week'])]) // Use filteredData here
+              .range([-width / 2 + 20, width / 2 - 20]);
     const y = d3.scaleLinear()
-                .domain([d3.max(data, d => d['Average GPA Received']), 0])
+                .domain([d3.max(filteredData, d => d['Average GPA Received']), 0]) // Use filteredData here
                 .range([-height / 2 + 40, height / 2 - 40]);
     const xAxis = d3.axisBottom(x);
     const yAxis = d3.axisLeft(y);
+    const xAxisTranslateY = height - 50; 
+    const yAxisTranslateX = 50; 
 
     filteredData.forEach(d => {
         d.x = x(d['Study Hours per Week']);
@@ -43,7 +45,6 @@
         d.radius = 5;
     });
 
-    console.log
 
     const simulation = d3.forceSimulation(filteredData) // Use filteredData here
         .force('x', d3.forceX(d => d.x).strength(0.99))
@@ -57,7 +58,7 @@
                 .attr('width', width)
                 .attr('height', height)
                 .append('g')
-                .attr('transform', `translate(${width / 2},${(height / 1.9)})`);
+                .attr('transform', `translate(${width / 2},${height / 2})`); 
 
     svg.selectAll('circle')
         .data(filteredData) // Use filteredData here
@@ -81,26 +82,26 @@
         .style('fill', '#fff')
         .style('font-size', '1.9px');
 
-    svg.append('g')
-        .attr('transform', `translate(0, ${300})`)
-        .call(xAxis.ticks(16))
-        .append('text')
-        .attr('x', 30) 
-        .attr('y', 40) 
-        .attr('fill', 'black')
-        .style('text-anchor', 'middle')
-        .text('Average Study Hours Per Week');
-    
-    svg.append('g')
-        .call(yAxis.ticks(8)) 
-        .attr('transform', `translate(-615,0)`)
-        .append('text')
-        .attr('transform', 'rotate(-90)')
-        .attr('x', -10)
-        .attr('y', -40)
-        .attr('fill', 'black')
-        .style('text-anchor', 'middle')
-        .text('Average GPA Received');
+        svg.append('g')
+     .attr('transform', `translate(${0 - width / 2 + 50},${0})`) // Move the x-axis to the bottom
+     .call(xAxis.ticks(16))
+     .append('text')
+     .attr('x', width / 2 - 50) 
+     .attr('y', 40) 
+     .attr('fill', 'black')
+     .style('text-anchor', 'middle')
+     .text('Average Study Hours Per Week');
+        
+  svg.append('g')
+     .attr('transform', `translate(${0 - width / 2 + 50},${0 - height / 2 + 50})`) // Move the y-axis to the left
+     .call(yAxis.ticks(8)) 
+     .append('text')
+     .attr('transform', 'rotate(-90)')
+     .attr('x', -height / 2 + 50)
+     .attr('y', -40)
+     .attr('fill', 'black')
+     .style('text-anchor', 'middle')
+     .text('Average GPA Received');
     
   }
 </script>
