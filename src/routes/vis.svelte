@@ -69,11 +69,11 @@
     const bins = histogram(filteredData);
 
     // uses highest height to shifting scales
-    maxHeight = Math.max(d3.max(bins, d => d.length), maxHeight)
+    // maxHeight = Math.max(d3.max(bins, d => d.length), maxHeight)
 
     const y = d3.scaleLinear()
       .range([height, 0]);
-    y.domain([0, maxHeight]);
+    y.domain([0, d3.max(bins, d => d.length)]);
 
     svg.append("g")
       .call(d3.axisLeft(y));
@@ -128,7 +128,7 @@
 
     // Add X Axis label
     svg.append("text")
-      .attr("transform", `translate(${width / 2}, ${height + margin.top})`)
+      .attr("transform", `translate(${width / 2}, ${height + margin.top + 20})`)
       .style("text-anchor", "middle")
       .text("Average Study Hours per Week");
 
@@ -183,7 +183,7 @@
     
     const pieRadius = Math.min(width, height) / 5; // Making the pie chart smaller
     const pieCenterX = histogramWidth + (svgWidth - (3 * histogramWidth)) / 4; // Adjust position based on histogram width
-    const pieCenterY = height / 3 + margin.top; // Center vertically within the histogram bounds
+    const pieCenterY = height / 6 + margin.top; // Center vertically within the histogram bounds
 
     // console.log(pieData.map(d => d.grade))
     // Create an arc generator
@@ -198,7 +198,8 @@
 
     // Append a new g element for the pie chart
     const pieG = svg.append("g")
-      .attr("transform", `translate(${pieCenterX},${pieCenterY})`);
+      .attr("transform", `translate(${pieCenterX},${pieCenterY})`)
+      .style("opacity", "0.9");
 
     // Create the pie chart
     pieG.selectAll("path")
