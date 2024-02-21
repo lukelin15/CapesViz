@@ -23,7 +23,6 @@
 
   function createVisualization() {
     d3.select('#my_dataviz').selectAll('*').remove();
-    // d3.select('#my_dataviz').select('#tooltip').remove();
 
     filteredData = data;
     if (selectedDepartment !== 'all') {
@@ -36,8 +35,8 @@
     const svgWidth = window.innerWidth;
     const svgHeight = window.innerHeight - margin.top - margin.bottom;
     const colorPie = d3.scaleOrdinal()
-      .domain(["B+ (3.3)", "A- (3.7)", "A+/A (4.0)", "B (3.0)", "B- (2.7)", "C+ (2.3)","C (2.0)"])
-      .range(["#edf8fb","#ccece6","#99d8c9","#66c2a4","#41ae76","#238b45","#005824"]);
+      .domain(["A+/A (4.0)", "A- (3.7)", "B+ (3.3)", "B (3.0)", "B- (2.7)", "C+ (2.3)","C (2.0)"])
+      .range(["#005824","#238b45","#41ae76","#66c2a4","#99d8c9","#ccece6","#edf8fb"]);
 
     const histogramWidth = svgWidth / 2; // Example, adjust based on actual width
     const histogramLeftMargin = (svgWidth - histogramWidth) / 2; // Centering the histogram
@@ -171,7 +170,6 @@
     const gradeCounts = grades.reduce(function (acc, curr) {
       return acc[curr] ? ++acc[curr] : acc[curr] = 1, acc
     }, {});
-    // console.log(occurrences)
 
     // Define the data for the pie chart
     const pieData = Object.entries(gradeCounts).map(([grade, count]) => ({grade, count}));
@@ -185,7 +183,6 @@
     const pieCenterX = histogramWidth + (svgWidth - (3 * histogramWidth)) / 4; // Adjust position based on histogram width
     const pieCenterY = height / 6 + margin.top; // Center vertically within the histogram bounds
 
-    // console.log(pieData.map(d => d.grade))
     // Create an arc generator
     const arc = d3.arc()
       .innerRadius(0)
@@ -252,9 +249,9 @@
       .join("path")
       .attr("fill", d => colorPie(d.data.grade)) // Use the color scale to set the fill color
       .attr("d", arc)
-      .on("mouseover", pieMouseover) // Add mouseover event
-      .on("mousemove", pieMousemove) // Add mousemove event
-      .on("mouseleave", pieMouseleave) // Add mouseleave event
+      .on("mouseover", pieMouseover) 
+      .on("mousemove", pieMousemove) 
+      .on("mouseleave", pieMouseleave) 
       .append("title")
       .text(d => `${d.data.grade}: ${d.data.count.toLocaleString()}`); // Add a legend
 
@@ -379,37 +376,53 @@
     line-height: 1.6;
     margin: 0 auto;
     width: 80%;
+    text-indent: 30px;
   }
 </style>
 <body>
   <h1>UCSD Capes Trends</h1>
-  <h2>Average Study Hours per Week and Average Grade Receivedby Course</h2>
+  <h2>Average Study Hours per Week and Average Grade Received by Course</h2>
   <p>
     We decided to plot the Average Study Hours per Week and Average Grade Received of UCSD courses using CAPES data. 
     In our histogram, the number of study hours are located on the x-axis while the number of courses 
-    are located on the y axis. Hovering over each bar on the histogram gives information on the number
-    of study hours, the number of courses in that bin, and the course codes in that bin. Moreover, we 
+    are located on the y-axis. Hovering over each bar on the histogram gives information on the number
+    of study hours, the number of courses in that bin, and the course codes in that bin. Note that some classes may appear more than once. This is because
+    the Course Name has changed and thus some of the course content may have changed at some point. Thus, these values were not aggregated to reflect this difference.
+    For more exact information, please refer to the csv file of data. Moreover, we 
     wanted to include information about the Average Grade Expected as well so we created a pie chart displaying
     this information with tooltip which gives the average grade and the number of courses in the selected department
     with that average grade received. We wanted to include the tooltip for both charts so that users can 
     hover over certain aspects and get more information not readily viewable like which specific courses 
     fall into each bin in the histogram. Moreover, for interaction, we included a dropdown menu of all the departments 
     at UCSD. When a department is selected, only the information regarding that department is shown.
-    We decided to include this menu so that users can compare statistics and see trends across the different departments. 
-    We thought this could be interesting not only see trands and variation within that specific department, but also
-    across departments as users can compare departments. Ultimately, we opted for a green color scheme for both the histogram and the pie chart for a sense of uniformity. 
+    We decided to include this menu so that users can compare statistics and see trends both within and across the different departments. 
+    We thought this could be interesting not only see trends and variation within that specific department, but also
+    across departments as users can compare departments. 
+    Ultimately, we opted for a green color scheme for both the histogram and the pie chart for a sense of uniformity. Darker greens reflect better grades and shades
+    get lighter to reflect the decrease in Average GPA Received. However, there are limitations to this graph.
+    obviously, since this is aggregated data across all quarters of CAPES, you do lose information about the how the Average Study Hours or Average Grades Received may
+    have changed from the past to more recent years as students typically find the data from more recent quarters more helpful when making enrollement decisions. 
+    Moreover, because we focused on Average Study Hours and Average Grade Received, other CAPES information like the Professor Recommentation Rate, and the difference
+    between the Average Grade Received and Average Grade Expected, which are also informative features in enrollment decisions, are also lost. Moreover, since CAPES 
+    is no longer used, this only reflects data up until Spring 2023.
   </p>
   <p>
     In regards to the development process, we started with cleaning the data in Pandas and getting only the 
     columns needed for our visual. At first we created a a dot plot with just the average study hours per week. 
     Then we toyed with the idea of creating a scatter plot, adding Average Grade Received as the y-axis. However
     the issue we ran into was that there were so many courses, that it was difficult to to interpret when all 
-    courses were selected. This we opted for the histogram instead with the additional pie chart.
+    courses were selected. Thus we opted for the histogram instead with the additional pie chart showing the grades received. 
+    We think this is far more interpretable and this bins of the histogram allow users to easily see which classes are similar in 
+    terms of Average Study Hours per week which was more difficult with the scatterplot. 
   </p>
   <p>
     Work was divided by team members taking on what they can as we discussed what needed to implemented or edits that needed
-    to be made. Work was split fairly evenly. Overall, we spent roughly 48 hours developing this application. Aspects
-    that took the most time were the interactivity, namely the tool tip and getting the dropdown menu to work.
+    to be made. Communication on edits and what needs to be done was done threw text and team members took on roles based on that. 
+    Work was split fairly evenly. Overall, we spent roughly 48 hours developing this application. Aspects
+    that took the most time were the interactivity, namely the tool tip and getting the dropdown menu to work. We ran into issues where the svg was constantly shifting
+    down with each new department selection, but were abkle to fix that once we found out that the old tooltip was not being removed after each new visualization. 
+    Moreover, we were able to implement the dropdown menu fairly easily, but getting it to work and filter the data based on the selected department did take time to 
+    figure out. 
   </p>
 </body>
 </html>
