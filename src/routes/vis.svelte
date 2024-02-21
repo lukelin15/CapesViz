@@ -265,7 +265,16 @@
       .attr("transform", d => `translate(${arc.centroid(d)})`) // Position the text at the centroid of each arc
       .attr("dy", "0.35em") // Vertically center the text
       .attr("text-anchor", "middle") // Horizontally center the text
-      .text(d => d.data.grade); // Display the grade
+      .text(d => {
+        // Check if the grade starts with "C"
+        if (d.data.grade.split(" ")[0] === "C") {
+          // If so, return an empty string to display no text
+          return "";
+        } else {
+          // Otherwise, display the grade normally
+          return d.data.grade.split(" ")[0];
+        }
+      });
   
     pieG.append("text")
       .attr("x", 0)
